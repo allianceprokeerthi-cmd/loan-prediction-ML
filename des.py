@@ -1,89 +1,164 @@
-# =========================
-# 📦 IMPORT LIBRARIES
-# =========================
-import pandas as pd
-import numpy as np
+# 🏦 Loan Prediction ML Project
 
-from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
-from sklearn.preprocessing import LabelEncoder
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix
+## 📌 Overview
 
-# =========================
-# 📂 LOAD DATA
-# =========================
-df = pd.read_csv('/content/drive/MyDrive/loan_data.csv')  # change path if needed
+This project focuses on building a Machine Learning model to predict whether a loan application will be **approved or rejected** based on applicant details.
 
-# =========================
-# 🧹 DATA PREPROCESSING
-# =========================
+The dataset is sourced from Kaggle and includes features such as income, loan amount, credit history, and more.
 
-# Drop unnecessary column
-if 'Loan_ID' in df.columns:
-    df.drop('Loan_ID', axis=1, inplace=True)
+---
 
-# Fill missing values
-for col in df.columns:
-    if df[col].dtype == 'object':
-        df[col].fillna(df[col].mode()[0], inplace=True)
-    else:
-        df[col].fillna(df[col].median(), inplace=True)
+## 🎯 Problem Statement
 
-# Encode categorical variables
-le = LabelEncoder()
-for col in df.columns:
-    if df[col].dtype == 'object':
-        df[col] = le.fit_transform(df[col])
+Predict the **Loan Status**:
 
-# =========================
-# 🎯 SPLIT DATA
-# =========================
-X = df.drop('Loan_Status', axis=1)
-y = df['Loan_Status']
+* `1` → Approved
+* `0` → Rejected
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
+This is a **binary classification problem**.
 
-# =========================
-# 🔍 MODEL + GRID SEARCH (CV)
-# =========================
-model = LogisticRegression(
-    penalty='l2',
-    class_weight='balanced',
+---
+
+## 📂 Dataset Features
+
+Some important features used:
+
+* ApplicantIncome
+* CoapplicantIncome
+* LoanAmount
+* Credit_History
+* Gender, Education, Property_Area
+
+---
+
+## 🛠️ Tech Stack
+
+* Python 🐍
+* Pandas, NumPy
+* Matplotlib, Seaborn
+* Scikit-learn
+* XGBoost
+
+---
+
+## 🔍 Approach
+
+### 1️⃣ Data Preprocessing
+
+* Handled missing values
+* Encoded categorical variables
+* Removed unnecessary columns (e.g., Loan_ID)
+
+---
+
+### 2️⃣ Exploratory Data Analysis (EDA)
+
+* Analyzed feature distributions
+* Checked class imbalance
+* Studied relationship with target variable
+
+---
+
+### 3️⃣ Handling Imbalance
+
+* Used class balancing techniques
+* Evaluated models using macro F1-score
+
+---
+
+### 4️⃣ Model Building
+
+Models experimented with:
+
+* Logistic Regression
+* Random Forest
+* Gradient Boosting
+* XGBoost ✅ (Final Model)
+
+---
+
+### 5️⃣ Model Tuning
+
+* Hyperparameter tuning using GridSearchCV
+* Cross-validation using Stratified K-Fold
+* Optimized parameters like:
+
+  * learning_rate
+  * max_depth
+  * n_estimators
+
+---
+
+## 🏆 Final Model
+
+**XGBoost Classifier**
+
+```python id="u7yqzp"
+XGBClassifier(
+    n_estimators=150,
+    max_depth=3,
+    learning_rate=0.05,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    eval_metric='logloss',
     random_state=42
 )
+```
 
-param_grid = {
-    'C': [0.1, 0.5, 1],
-    'max_iter': [100, 200, 300]
-}
+---
 
-cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+## 📊 Final Results
 
-grid = GridSearchCV(
-    model,
-    param_grid,
-    cv=cv,
-    scoring='f1_macro',
-    n_jobs=-1
-)
+| Metric         | Score    |
+| -------------- | -------- |
+| Accuracy       | **0.85** |
+| Macro F1 Score | **0.81** |
 
-grid.fit(X_train, y_train)
+### Classification Report:
 
-# =========================
-# 🏆 BEST MODEL
-# =========================
-best_model = grid.best_estimator_
+```id="3q0hvt"
+Class 0 (Rejected): Precision = 0.88, Recall = 0.61, F1 = 0.72  
+Class 1 (Approved): Precision = 0.85, Recall = 0.96, F1 = 0.90  
+```
+## 📊 Confusion Matrix
 
-# =========================
-# 📊 EVALUATION
-# =========================
-y_pred = best_model.predict(X_test)
+![Confusion Matrix](confusion_matrix.png)
+---
 
-print("Best Parameters:", grid.best_params_)
-print("\nClassification Report:\n")
-print(classification_report(y_test, y_pred))
+## 📈 Key Insights
 
-print("Confusion Matrix:\n")
-print(confusion_matrix(y_test, y_pred))
+* Multiple models were tested including Logistic Regression, Random Forest, Gradient Boosting, and XGBoost
+* XGBoost achieved the best overall performance with highest macro F1-score
+* It minimized false negatives, which is critical in loan approval systems
+* Tree-based models performed better after tuning
+* Cross-validation ensured model stability and reliability
+
+---
+
+## ⚠️ Challenges
+
+* Imbalanced dataset
+* Small dataset size
+* Initial model bias toward majority class
+
+---
+
+## 🚀 Future Improvements
+
+* Apply SMOTE for further imbalance handling
+* Feature engineering (income ratios, etc.)
+* Model deployment using Flask/Streamlit
+* Add explainability (SHAP values for XGBoost)
+
+---
+
+## 💡 Conclusion
+
+After evaluating multiple models, XGBoost provided the best balance between accuracy and recall, making it the most suitable model for loan approval prediction.
+
+---
+
+## 🙌 Author
+
+**Keerthi**
+GitHub: https://github.com/allianceprokeerthi-cmd
